@@ -6,7 +6,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from prof.api.serializers import RegisterSerializer, UserSerializer, FollowSerializer
+from prof.api.serializers import RegisterSerializer, UserSerializer, FollowCreateSerializer, FollowerSerializer, \
+    FollowingSerializer, UnFollowSerializer
 from rest_framework import mixins
 
 from prof.models import Follow
@@ -44,31 +45,50 @@ class Logout_view(APIView):
                 'detail': 'sth went wrong'})
 
 
-class Follow_create_view(mixins.CreateModelMixin, GenericAPIView):
+class Follow_create_view(APIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = FollowSerializer
 
-    def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
+    def post(self, request):
+        serializer = FollowCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            res = serializer.follow(self.request.user)
+            if res:
+                return JsonResponse({
+                    'status': True,
+                })
+            else:
+                return JsonResponse({
+                    'status': False,
+                })
 
 
-class Follow_delete_view(mixins.DestroyModelMixin, GenericAPIView):
+class UnFollow_view(APIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = FollowSerializer
 
-    def delete(self, request, *args, **kwargs):
-        return self.destroy(request, *args, **kwargs)
+    def post(self, request):
+        serializer = UnFollowSerializer(data=request.data)
+        if serializer.is_valid():
+            res = serializer.unfollow(self.request.user)
+            if res:
+                return JsonResponse({
+                    'status': True,
+                })
+            else:
+                return JsonResponse({
+                    'status': False,
+                })
 
 
 class Following_view(mixins.ListModelMixin, generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = FollowSerializer
+    serializer_class = FollowingSerializer
+    queryset = Follow.objects.all()
     filter_backends = [filters.OrderingFilter]
     ordering = ['date']
 
-    def get_queryset(self):
-        user = self.request.user
-        return Follow.objects.filter(target=user).select_related('target')
+    # def get_queryset(self):
+    #     user = self.request.user
+    #     return Follow.objects.filter(user=user)
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
@@ -76,13 +96,14 @@ class Following_view(mixins.ListModelMixin, generics.GenericAPIView):
 
 class Follower_view(mixins.ListModelMixin, generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = FollowSerializer
+    serializer_class = FollowerSerializer
+    queryset = Follow.objects.all()
     filter_backends = [filters.OrderingFilter]
     ordering = ['date']
 
-    def get_queryset(self):
-        user = self.request.user
-        return Follow.objects.filter(target=user).select_related('target')
+    # def get_queryset(self):
+    #     user = self.request.user
+    #     return Follow.objects.filter(target=user)
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)

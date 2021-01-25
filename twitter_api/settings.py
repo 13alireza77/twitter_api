@@ -54,7 +54,9 @@ ROOT_URLCONF = 'twitter_api.urls'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ]
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 30
 }
 TEMPLATES = [
     {
@@ -122,3 +124,6 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiels')
 AUTH_USER_MODEL = 'prof.UserProfile'
+MEDIA_URL = '/media/'
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'build/static')]
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

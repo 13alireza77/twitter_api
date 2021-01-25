@@ -4,6 +4,8 @@ from django.contrib.auth import get_user_model
 
 
 class RegisterSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(max_length=50, required=False)
+
     class Meta:
         User = get_user_model()
         model = User
@@ -14,8 +16,11 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         User = get_user_model()
-        user = User.objects.create_user(validated_data['email'], password=validated_data['password'],
-                                        username=validated_data['username'])
+        try:
+            user = User.objects.create_user(validated_data['email'], password=validated_data['password'],
+                                            username=validated_data['username'])
+        except:
+            user = User.objects.create_user(validated_data['email'], password=validated_data['password'])
         return user
 
 
@@ -26,7 +31,46 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['email', 'username', 'is_active', 'create_at', 'last_modif']
 
 
-class FollowSerializer(serializers.ModelSerializer):
+class FollowCreateSerializer(serializers.Serializer):
+    email = serializers.CharField(max_length=50)
+
+    def follow(self, user):
+        email = self.validated_data['email']
+        target = UserProfile.objects.filter(email=email).first()
+        if user and target:
+            follow = Follow(
+                user=user,
+                target=target,
+            )
+            follow.save()
+            return follow
+        return None
+
+
+class UnFollowSerializer(serializers.Serializer):
+    email = serializers.CharField(max_length=50)
+
+    def unfollow(self, user):
+        email = self.validated_data['email']
+        target = UserProfile.objects.filter(email=email).first()
+        if user and target:
+            follow = Follow.objects.filter(user=user, target=target).first()
+            follow.delete()
+            return follow
+        return None
+
+
+class FollowerSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+
     class Meta:
         model = Follow
-        fields = ('user', 'target')
+        fields = ('user', 'date')
+
+
+class FollowingSerializer(serializers.ModelSerializer):
+    target = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Follow
+        fields = ('target', 'date')
