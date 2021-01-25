@@ -77,7 +77,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 class Follow(models.Model):
     user = models.ForeignKey("UserProfile", related_name='friends', on_delete=models.CASCADE)
     target = models.ForeignKey("UserProfile", related_name='followers', on_delete=models.CASCADE)
-    date = models.DateField(auto_now_add=True)
+    date = models.DateTimeField(default=timezone.now)
 
     class Meta:
         unique_together = ('user', 'target',)
