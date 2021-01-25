@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from prof.models import UserProfile
+from prof.models import UserProfile, Follow
 from django.contrib.auth import get_user_model
 
 
@@ -24,3 +24,9 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = ['email', 'username', 'is_active', 'create_at', 'last_modif']
+
+
+class FollowSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Follow
+        fields = ('user', 'target')
