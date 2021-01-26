@@ -20,7 +20,10 @@ class RegisterSerializer(serializers.ModelSerializer):
             user = User.objects.create_user(validated_data['email'], password=validated_data['password'],
                                             username=validated_data['username'])
         except:
-            user = User.objects.create_user(validated_data['email'], password=validated_data['password'])
+            try:
+                user = User.objects.create_user(validated_data['email'], password=validated_data['password'])
+            except:
+                return None
         return user
 
 

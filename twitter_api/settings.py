@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'twitt',
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
+    'corsheaders',
+
 ]
 
 MIDDLEWARE = [
@@ -50,6 +52,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'twitter_api.urls'
@@ -133,3 +136,4 @@ AUTH_USER_MODEL = 'prof.UserProfile'
 MEDIA_URL = '/media/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'build/static')]
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+CORS_ORIGIN_ALLOW_ALL = True

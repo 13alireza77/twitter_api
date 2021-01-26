@@ -20,10 +20,15 @@ class RegisterApi(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        return Response({
-            "user": UserSerializer(user, context=self.get_serializer_context()).data,
-            "status": True,
-        })
+        if user:
+            return Response({
+                "user": UserSerializer(user, context=self.get_serializer_context()).data,
+                "status": True,
+            })
+        else:
+            return JsonResponse({
+                'status': False,
+            })
 
 
 class Logout_view(APIView):

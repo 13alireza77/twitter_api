@@ -17,10 +17,10 @@ class Twitt(models.Model):
 
 
 class Hashtag(models.Model):
-    users = models.ManyToManyField("Twitt")
-    name = models.CharField(validators=[RegexValidator(r"^(#\w+\s+)+$")], max_length=50, unique=True)
-    occurrences = models.PositiveIntegerField(default=0, null=False, blank=False, auto_created=True)
-    lastupdate = models.DateTimeField(default=timezone.now)
+    twitts = models.ManyToManyField("Twitt")
+    name = models.CharField(max_length=50, unique=True)
+    occurrences = models.PositiveIntegerField(default=1, null=False, blank=False, auto_created=True)
+    lastupdate = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
@@ -48,3 +48,12 @@ class Retwitt(models.Model):
 
     def __str__(self):
         return f"{self.user.email} - {self.date}"
+
+
+class Comment(models.Model):
+    parent = models.ForeignKey("Twitt", related_name="parent", on_delete=models.CASCADE)
+    twitt = models.ForeignKey("Twitt", related_name="twitt", on_delete=models.CASCADE)
+    date = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.parent.pk} - {self.twitt.pk}"

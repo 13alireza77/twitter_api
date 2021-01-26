@@ -1,24 +1,44 @@
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
-
+from django.db.models import F
 from prof.api.serializers import UserSerializer
-from prof.models import UserProfile, Follow
-from django.contrib.auth import get_user_model
+from twitt.models import Twitt, Retwitt, Like, Comment, Hashtag
+from django.utils import timezone
+import re
 
-from twitt.models import Twitt, Retwitt, Like
+
+def extract_hashtags(text):
+    regex = "#(\w+)"
+    return re.findall(regex, text)
 
 
 class TwittCreateSerializer(serializers.Serializer):
-    text = serializers.CharField(max_length=250)
+    text = serializers.CharField(max_length=250, allow_null=True)
+    image = serializers.ImageField(allow_null=True)
+    video = serializers.FileField(allow_null=True)
 
     def twitt(self, user):
         text = self.validated_data['text']
-        if text:
+        image = self.validated_data['image']
+        video = self.validated_data['video']
+        if text or image or video:
             twitt = Twitt(
                 user=user,
                 text=text,
+                image=image,
+                video=video,
             )
             twitt.save()
+            if text:
+                for h in extract_hashtags(text):
+                    obj, created = Hashtag.objects.get_or_create(name=h)
+                    if obj:
+                        obj.twitts.add(twitt)
+                        Hashtag.objects.filter(name=h).update(occurrences=F('occurrences') + 1)
+                        obj.save()
+                    else:
+                        created.twitts.add(twitt)
+                        created.save()
             return twitt.pk
         else:
             return None
@@ -58,13 +78,17 @@ class TwittSerializer(serializers.ModelSerializer):
     image = serializers.ImageField()
     video = serializers.FileField()
     likes = SerializerMethodField()
+    comments = SerializerMethodField()
 
     class Meta:
         model = Twitt
-        fields = ('text', 'date', 'image', 'video', 'likes')
+        fields = ('text', 'date', 'image', 'video', 'likes', 'comments')
 
     def get_likes(self, obj):
         return Like.objects.filter(twitt_id=obj.id).count()
+
+    def get_comments(self, obj):
+        return Comment.objects.filter(twitt_id=obj.id).values_list('id', flat=True)
 
 
 class CreateLikeSerializer(serializers.Serializer):
@@ -90,3 +114,30 @@ class UersLikeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Like
         fields = ('user', 'date')
+
+
+class CommentCreateSerializer(serializers.Serializer):
+    text = serializers.CharField(max_length=250, allow_null=True)
+    image = serializers.ImageField(allow_null=True)
+    video = serializers.FileField(allow_null=True)
+    pk = serializers.IntegerField()
+
+    def comment(self, user):
+        text = self.validated_data['text']
+        image = self.validated_data['image']
+        video = self.validated_data['video']
+        pk = self.validated_data['pk']
+        if (text or image or video) and pk:
+            twittp = Twitt.objects.filter(pk=pk).first()
+            twitt = Twitt(
+                user=user,
+                text=text,
+                image=image,
+                video=video,
+            )
+            twitt.save()
+            comment = Comment(parent=twittp, twitt=twitt)
+            comment.save()
+            return comment.pk
+        else:
+            return None
