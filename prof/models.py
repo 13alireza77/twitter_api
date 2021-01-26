@@ -86,6 +86,10 @@ class Follow(models.Model):
     def __str__(self):
         return f"{self.user} follow {self.target} - {self.date}"
 
+
+class Event(models.Model):
+    user = models.ForeignKey("UserProfile", on_delete=models.CASCADE)
+
 # class Log(models.Model):
 #     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
 #     retwitt = models.ForeignKey("twitt.Retwitt", on_delete=models.CASCADE)

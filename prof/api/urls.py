@@ -2,7 +2,7 @@ from django.urls import path
 from rest_framework_simplejwt import views as jwt_views
 
 from prof.api.views import RegisterApi, Logout_view, Follow_create_view, Following_view, \
-    Follower_view, UnFollow_view, Get_My, Get_Profie
+    Follower_view, UnFollow_view, Get_My, Get_Profie, ChangePasswordView, UpdateProfileView
 
 urlpatterns = [
     path('register', RegisterApi.as_view(), name='register'),
@@ -14,5 +14,7 @@ urlpatterns = [
     path('follower/list', Follower_view.as_view(), name='Follower_view'),
     path('following/list', Following_view.as_view(), name='Following_view'),
     path('myprofile/', Get_My.as_view(), name='Get_My'),
-    path('profile/<int:pk>', Get_Profie.as_view(), name='Get_Profie'),
+    path('profile/<str:username>', Get_Profie.as_view(), name='Get_Profie'),
+    path('change_password/<int:pk>/', ChangePasswordView.as_view(), name='auth_change_password'),
+    path('update_profile/<int:pk>/', UpdateProfileView.as_view(), name='auth_update_profile'),
 ]

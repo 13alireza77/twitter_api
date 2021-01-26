@@ -75,8 +75,9 @@ class Twitt_view(mixins.ListModelMixin, generics.GenericAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        obs = Follow.objects.filter(user=user).select_related('target').values_list('id', flat=True)
-        return Twitt.objects.filter(id__in=obs)
+        obs = Follow.objects.filter(user=user)
+        al = [o.target.pk for o in obs]
+        return Twitt.objects.filter(user__id__in=al)
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
@@ -157,6 +158,22 @@ class Get_top_Hashtags(mixins.ListModelMixin, generics.GenericAPIView):
     queryset = Hashtag.objects.all()
     filter_backends = [filters.OrderingFilter]
     ordering = ['occurrences']
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+
+class Event_view(mixins.ListModelMixin, generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = TwittSerializer
+    # queryset = Follow.objects.all()
+    filter_backends = [filters.OrderingFilter]
+    ordering = ['date']
+
+    def get_queryset(self):
+        user = self.request.user
+        obs = Follow.objects.filter(target=user).select_related('user').values_list('id', flat=True)
+        return Twitt.objects.filter(id__in=obs)
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)

@@ -1,13 +1,14 @@
 from django.http import JsonResponse, Http404
 from rest_framework import generics, permissions, filters
 from rest_framework.generics import GenericAPIView
+from rest_framework.parsers import FileUploadParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from prof.api.serializers import RegisterSerializer, UserSerializer, FollowCreateSerializer, FollowerSerializer, \
-    FollowingSerializer, UnFollowSerializer, MySerializer
+    FollowingSerializer, UnFollowSerializer, MySerializer, ChangePasswordSerializer, UpdateUserSerializer
 from rest_framework import mixins
 
 from prof.models import Follow, UserProfile
@@ -119,17 +120,17 @@ class Get_Profie(APIView):
 
     # serializer_class = UersLikeSerializer
     # queryset = Follow.objects.all()
-    def get_object(self, pk):
+    def get_object(self, username):
         try:
-            return UserProfile.objects.filter(pk=pk).first()
+            return UserProfile.objects.filter(username=username).first()
         except UserProfile.DoesNotExist:
             raise Http404
 
     # def get_queryset(self):
     #     return Twitt.objects.filter(twitt_id=self.request.data['pk']).first()
 
-    def get(self, request, pk, *args, **kwargs):
-        snippet = self.get_object(pk)
+    def get(self, request, username, *args, **kwargs):
+        snippet = self.get_object(username)
         serializer = UserSerializer(snippet)
         return Response(serializer.data)
 
@@ -152,3 +153,16 @@ class Get_My(APIView):
         snippet = self.get_object(request.user)
         serializer = MySerializer(snippet)
         return Response(serializer.data)
+
+
+class ChangePasswordView(generics.UpdateAPIView):
+    queryset = UserProfile.objects.all()
+    permission_classes = (IsAuthenticated,)
+    serializer_class = ChangePasswordSerializer
+
+
+class UpdateProfileView(generics.UpdateAPIView):
+    parser_class = (FileUploadParser,)
+    queryset = UserProfile.objects.all()
+    permission_classes = (IsAuthenticated,)
+    serializer_class = UpdateUserSerializer
