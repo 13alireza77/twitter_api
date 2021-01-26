@@ -79,16 +79,17 @@ class TwittSerializer(serializers.ModelSerializer):
     video = serializers.FileField()
     likes = SerializerMethodField()
     comments = SerializerMethodField()
+    user = UserSerializer(read_only=True)
 
     class Meta:
         model = Twitt
-        fields = ('text', 'date', 'image', 'video', 'likes', 'comments')
+        fields = ('user', 'text', 'date', 'image', 'video', 'likes', 'comments')
 
     def get_likes(self, obj):
         return Like.objects.filter(twitt_id=obj.id).count()
 
     def get_comments(self, obj):
-        return Comment.objects.filter(twitt_id=obj.id).values_list('id', flat=True)
+        return Comment.objects.filter(parent__id=obj.id).values_list('id', flat=True)
 
 
 class CreateLikeSerializer(serializers.Serializer):
@@ -141,3 +142,9 @@ class CommentCreateSerializer(serializers.Serializer):
             return comment.pk
         else:
             return None
+
+
+class HashtagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Hashtag
+        fields = ('name', 'occurrences', 'lastupdate')

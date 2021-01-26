@@ -6,9 +6,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import mixins
+
+from prof.models import Follow
 from twitt.api.serializers import TwittCreateSerializer, TwittDeleteSerializer, ReTwittCreateSerializer, \
-    TwittSerializer, UersLikeSerializer, CreateLikeSerializer, CommentCreateSerializer
-from twitt.models import Twitt, Retwitt, Like
+    TwittSerializer, UersLikeSerializer, CreateLikeSerializer, CommentCreateSerializer, HashtagSerializer
+from twitt.models import Twitt, Retwitt, Like, Hashtag
 from rest_framework.parsers import MultiPartParser, FormParser, FileUploadParser
 
 
@@ -73,7 +75,8 @@ class Twitt_view(mixins.ListModelMixin, generics.GenericAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        return Twitt.objects.filter(Q(user=user) | Q(retwitt__user=user))
+        obs = Follow.objects.filter(user=user).select_related('target').values_list('id', flat=True)
+        return Twitt.objects.filter(id__in=obs)
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
@@ -146,3 +149,14 @@ class Get_twitt(APIView):
         snippet = self.get_object(pk)
         serializer = TwittSerializer(snippet)
         return Response(serializer.data)
+
+
+class Get_top_Hashtags(mixins.ListModelMixin, generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = HashtagSerializer
+    queryset = Hashtag.objects.all()
+    filter_backends = [filters.OrderingFilter]
+    ordering = ['occurrences']
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)

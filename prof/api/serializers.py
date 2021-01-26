@@ -1,6 +1,10 @@
 from rest_framework import serializers
+from rest_framework.fields import SerializerMethodField
+
 from prof.models import UserProfile, Follow
 from django.contrib.auth import get_user_model
+
+from twitt.models import Retwitt, Like
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -27,14 +31,13 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 
-# User serializer
 class UserSerializer(serializers.ModelSerializer):
     picture = serializers.ImageField()
     cover = serializers.ImageField()
 
     class Meta:
         model = UserProfile
-        fields = ['email', 'username', 'is_active', 'create_at', 'last_modif', 'picture', 'cover']
+        fields = ['email', 'username', 'name', 'is_active', 'create_at', 'last_modif', 'picture', 'cover']
 
 
 class FollowCreateSerializer(serializers.Serializer):
@@ -80,3 +83,50 @@ class FollowingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Follow
         fields = ('target', 'date')
+
+
+# class LogSerializer(serializers.ModelSerializer):
+#     retwittl = serializers.RelatedField(source='retwitt', read_only=True)
+#     likel = serializers.RelatedField(source='like', read_only=True)
+#     followl = serializers.RelatedField(source='follow', read_only=True)
+#
+#     class Meta:
+#         model = Log
+#         fields = ('user', 'retwittl', 'likel')
+
+
+class MySerializer(serializers.ModelSerializer):
+    picture = serializers.ImageField()
+    cover = serializers.ImageField()
+    retwittl = SerializerMethodField()
+    likel = SerializerMethodField()
+    followl = SerializerMethodField()
+
+    class Meta:
+        model = UserProfile
+        fields = ['email', 'username', 'name', 'is_active', 'create_at', 'last_modif', 'picture', 'cover', 'retwittl',
+                  'likel', 'followl']
+
+    def get_retwittl(self, obj):
+        ob = Retwitt.objects.filter(user__id=obj.id)
+        res = []
+        lob = ob.select_related('target').values_list('id', flat=True)
+        for i, j in zip(ob, lob):
+            res.append((i.date, j))
+        return res
+
+    def get_likel(self, obj):
+        ob = Like.objects.filter(user__id=obj.id)
+        res = []
+        lob = ob.select_related('target').values_list('id', flat=True)
+        for i, j in zip(ob, lob):
+            res.append((i.date, j))
+        return res
+
+    def get_followl(self, obj):
+        ob = Follow.objects.filter(user__id=obj.id)
+        res = []
+        lob = ob.select_related('target').values_list('id', flat=True)
+        for i, j in zip(ob, lob):
+            res.append((i.date, j))
+        return res

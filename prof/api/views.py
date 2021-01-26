@@ -1,4 +1,4 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
 from rest_framework import generics, permissions, filters
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
@@ -7,10 +7,10 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from prof.api.serializers import RegisterSerializer, UserSerializer, FollowCreateSerializer, FollowerSerializer, \
-    FollowingSerializer, UnFollowSerializer
+    FollowingSerializer, UnFollowSerializer, MySerializer
 from rest_framework import mixins
 
-from prof.models import Follow
+from prof.models import Follow, UserProfile
 
 
 class RegisterApi(generics.GenericAPIView):
@@ -112,3 +112,43 @@ class Follower_view(mixins.ListModelMixin, generics.GenericAPIView):
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
+
+
+class Get_Profie(APIView):
+    # permission_classes = [IsAuthenticated]
+
+    # serializer_class = UersLikeSerializer
+    # queryset = Follow.objects.all()
+    def get_object(self, pk):
+        try:
+            return UserProfile.objects.filter(pk=pk).first()
+        except UserProfile.DoesNotExist:
+            raise Http404
+
+    # def get_queryset(self):
+    #     return Twitt.objects.filter(twitt_id=self.request.data['pk']).first()
+
+    def get(self, request, pk, *args, **kwargs):
+        snippet = self.get_object(pk)
+        serializer = UserSerializer(snippet)
+        return Response(serializer.data)
+
+
+class Get_My(APIView):
+    permission_classes = [IsAuthenticated]
+
+    # serializer_class = UersLikeSerializer
+    # queryset = Follow.objects.all()
+    def get_object(self, pk):
+        try:
+            return UserProfile.objects.filter(pk=pk.pk).first()
+        except UserProfile.DoesNotExist:
+            raise Http404
+
+    # def get_queryset(self):
+    #     return Twitt.objects.filter(twitt_id=self.request.data['pk']).first()
+
+    def get(self, request, *args, **kwargs):
+        snippet = self.get_object(request.user)
+        serializer = MySerializer(snippet)
+        return Response(serializer.data)

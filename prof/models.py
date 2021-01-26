@@ -43,6 +43,7 @@ class MyUserManager(BaseUserManager):
 
 
 class UserProfile(AbstractBaseUser, PermissionsMixin):
+    name = models.CharField(max_length=50, null=True, blank=True)
     email = models.EmailField(max_length=50, unique=True)
     username = models.CharField(max_length=50, unique=True)
     picture = models.ImageField(null=True, blank=True)
@@ -83,4 +84,13 @@ class Follow(models.Model):
         unique_together = ('user', 'target',)
 
     def __str__(self):
-        return f"{self.user} follow {self.target}"
+        return f"{self.user} follow {self.target} - {self.date}"
+
+# class Log(models.Model):
+#     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+#     retwitt = models.ForeignKey("twitt.Retwitt", on_delete=models.CASCADE)
+#     like = models.ForeignKey("twitt.Like", on_delete=models.CASCADE)
+#     follow = models.ForeignKey(Follow, on_delete=models.CASCADE)
+#
+#     def __str__(self):
+#         return f"{self.retwitt.pk} - {self.like.pk} - {self.follow.pk}"
