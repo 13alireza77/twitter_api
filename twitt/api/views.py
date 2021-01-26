@@ -6,8 +6,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import mixins
-from twitt.api.serializers import TwittCreateSerializer, TwittDeleteSerializer, ReTwittCreateSerializer, TwittSerializer
-from twitt.models import Twitt, Retwitt
+from twitt.api.serializers import TwittCreateSerializer, TwittDeleteSerializer, ReTwittCreateSerializer, \
+    TwittSerializer, UersLikeSerializer, CreateLikeSerializer
+from twitt.models import Twitt, Retwitt, Like
 
 
 class Twitt_create_view(APIView):
@@ -19,7 +20,7 @@ class Twitt_create_view(APIView):
             res = serializer.twitt(self.request.user)
             if res:
                 return JsonResponse({
-                    'status': True,
+                    'status': res,
                 })
             else:
                 return JsonResponse({
@@ -75,16 +76,33 @@ class Twitt_view(mixins.ListModelMixin, generics.GenericAPIView):
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
 
-# class Follower_view(mixins.ListModelMixin, generics.GenericAPIView):
-#     permission_classes = [IsAuthenticated]
-#     serializer_class = FollowerSerializer
-#     queryset = Follow.objects.all()
-#     filter_backends = [filters.OrderingFilter]
-#     ordering = ['date']
-#
-#     # def get_queryset(self):
-#     #     user = self.request.user
-#     #     return Follow.objects.filter(target=user)
-#
-#     def get(self, request, *args, **kwargs):
-#         return self.list(request, *args, **kwargs)
+
+class Like_create_view(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = CreateLikeSerializer(data=request.data)
+        if serializer.is_valid():
+            res = serializer.like(self.request.user)
+            if res:
+                return JsonResponse({
+                    'status': res,
+                })
+            else:
+                return JsonResponse({
+                    'status': False,
+                })
+
+
+class Likes_view(mixins.ListModelMixin, generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UersLikeSerializer
+    # queryset = Follow.objects.all()
+    filter_backends = [filters.OrderingFilter]
+    ordering = ['date']
+
+    def get_queryset(self):
+        return Like.objects.filter(twitt_id=self.request.data['pk'])
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)

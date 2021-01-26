@@ -26,9 +26,12 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 # User serializer
 class UserSerializer(serializers.ModelSerializer):
+    picture = serializers.ImageField()
+    cover = serializers.ImageField()
+
     class Meta:
         model = UserProfile
-        fields = ['email', 'username', 'is_active', 'create_at', 'last_modif']
+        fields = ['email', 'username', 'is_active', 'create_at', 'last_modif', 'picture', 'cover']
 
 
 class FollowCreateSerializer(serializers.Serializer):

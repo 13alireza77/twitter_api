@@ -1,8 +1,11 @@
 from rest_framework import serializers
+from rest_framework.fields import SerializerMethodField
+
+from prof.api.serializers import UserSerializer
 from prof.models import UserProfile, Follow
 from django.contrib.auth import get_user_model
 
-from twitt.models import Twitt, Retwitt
+from twitt.models import Twitt, Retwitt, Like
 
 
 class TwittCreateSerializer(serializers.Serializer):
@@ -16,13 +19,13 @@ class TwittCreateSerializer(serializers.Serializer):
                 text=text,
             )
             twitt.save()
-            return twitt
+            return twitt.pk
         else:
             return None
 
 
 class ReTwittCreateSerializer(serializers.Serializer):
-    text = serializers.CharField(max_length=250)
+    pk = serializers.IntegerField(min_value=0)
 
     def retwitt(self, user):
         pk = self.validated_data['pk']
@@ -52,13 +55,38 @@ class TwittDeleteSerializer(serializers.Serializer):
 
 
 class TwittSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField()
+    video = serializers.FileField()
+    likes = SerializerMethodField()
+
     class Meta:
         model = Twitt
-        fields = ('text', 'date')
+        fields = ('text', 'date', 'image', 'video', 'likes')
 
-# class FollowingSerializer(serializers.ModelSerializer):
-#     target = UserSerializer(read_only=True)
-#
-#     class Meta:
-#         model = Follow
-#         fields = ('target', 'date')
+    def get_likes(self, obj):
+        return Like.objects.filter(twitt_id=obj.id).count()
+
+
+class CreateLikeSerializer(serializers.Serializer):
+    pk = serializers.IntegerField(min_value=0)
+
+    def like(self, user):
+        pk = self.validated_data['pk']
+        twitt = Twitt.objects.filter(pk=pk).first()
+        if twitt:
+            like = Like(
+                user=user,
+                twitt=twitt,
+            )
+            like.save()
+            return like.pk
+        else:
+            return None
+
+
+class UersLikeSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Like
+        fields = ('user', 'date')
