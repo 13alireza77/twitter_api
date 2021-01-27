@@ -89,7 +89,7 @@ class TwittSerializer(serializers.ModelSerializer):
         return Like.objects.filter(twitt_id=obj.id).count()
 
     def get_comments(self, obj):
-        return Comment.objects.filter(parent__id=obj.id).values_list('id', flat=True)
+        return Comment.objects.filter(parent__id=obj.id).select_related('twitt').values_list('id', flat=True)
 
 
 class CreateLikeSerializer(serializers.Serializer):
