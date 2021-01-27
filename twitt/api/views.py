@@ -9,7 +9,7 @@ from rest_framework import mixins
 
 from prof.models import Follow
 from twitt.api.serializers import TwittCreateSerializer, TwittDeleteSerializer, ReTwittCreateSerializer, \
-    TwittSerializer, UersLikeSerializer, CreateLikeSerializer, CommentCreateSerializer, HashtagSerializer
+    TwittSerializer, CreateLikeSerializer, CommentCreateSerializer, HashtagSerializer
 from twitt.models import Twitt, Retwitt, Like, Hashtag
 from rest_framework.parsers import MultiPartParser, FormParser, FileUploadParser
 
@@ -115,18 +115,18 @@ class Like_create_view(APIView):
                 })
 
 
-class Likes_view(mixins.ListModelMixin, generics.GenericAPIView):
-    permission_classes = [IsAuthenticated]
-    serializer_class = UersLikeSerializer
-    # queryset = Follow.objects.all()
-    filter_backends = [filters.OrderingFilter]
-    ordering = ['date']
-
-    def get_queryset(self):
-        return Like.objects.filter(twitt_id=self.request.data['pk'])
-
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
+# class Likes_view(mixins.ListModelMixin, generics.GenericAPIView):
+#     # permission_classes = [IsAuthenticated]
+#     serializer_class = UersLikeSerializer
+#     # queryset = Follow.objects.all()
+#     filter_backends = [filters.OrderingFilter]
+#     ordering = ['date']
+#
+#     def get_queryset(self):
+#         return Like.objects.filter(twitt_id=self.request.data['pk'])
+#
+#     def get(self, request, *args, **kwargs):
+#         return self.list(request, *args, **kwargs)
 
 
 class Comment_create_view(APIView):

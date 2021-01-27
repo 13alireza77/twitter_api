@@ -185,7 +185,7 @@ class GetEvent(mixins.ListModelMixin, generics.GenericAPIView):
                 e.update = False
                 objs = chain(UserProfile.objects.filter(like__twitt__user_id=user, like__date__gt=d),
                              UserProfile.objects.filter(retwitt__twitt__user__id=user, retwitt__date__gt=d),
-                             UserProfile.objects.filter(follow__target__id=user, follow__date__gt=d))
+                             Follow.objects.filter(target_))
                 e.date = timezone.now
                 e.save()
                 return objs

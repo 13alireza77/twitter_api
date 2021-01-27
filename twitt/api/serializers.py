@@ -82,18 +82,25 @@ class TwittSerializer(serializers.ModelSerializer):
     video = serializers.FileField(allow_null=True)
     likes = SerializerMethodField(allow_null=True)
     comments = SerializerMethodField(allow_null=True)
+    retwitts = SerializerMethodField(allow_null=True)
     user = UserSerializer(read_only=True)
     id = SerializerMethodField()
 
     class Meta:
         model = Twitt
-        fields = ('id', 'user', 'text', 'date', 'image', 'video', 'likes', 'comments')
+        fields = ('id', 'user', 'text', 'date', 'image', 'video', 'likes', 'comments', 'retwitts')
 
     def get_likes(self, obj):
-        return Like.objects.filter(twitt_id=obj.id).count()
+        obs = Like.objects.filter(twitt_id=obj.id)
+        return [t.user.id for t in obs]
 
     def get_comments(self, obj):
-        return Comment.objects.filter(parent__id=obj.id).select_related('twitt').values_list('id', flat=True)
+        obs = Comment.objects.filter(parent__id=obj.id)
+        return [t.twitt.id for t in obs]
+
+    def get_retwitts(self, obj):
+        obs = Retwitt.objects.filter(twitt_id=obj.id)
+        return [t.user.id for t in obs]
 
     def get_id(self, obj):
         return obj.pk
@@ -119,12 +126,12 @@ class CreateLikeSerializer(serializers.Serializer):
             return None
 
 
-class UersLikeSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)
-
-    class Meta:
-        model = Like
-        fields = ('user', 'date')
+# class UersLikeSerializer(serializers.ModelSerializer):
+#     user = UserSerializer(read_only=True)
+#
+#     class Meta:
+#         model = Like
+#         fields = ('user', 'date')
 
 
 class CommentCreateSerializer(serializers.Serializer):
