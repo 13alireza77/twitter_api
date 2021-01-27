@@ -163,7 +163,7 @@ class Get_twitt(APIView):
 
     def get(self, request, pk, *args, **kwargs):
         snippet = self.get_object(pk)
-        serializer = TwittSerializer(snippet)
+        serializer = TwittSerializer(snippet, context={'request': request})
         return Response(serializer.data)
 
 
