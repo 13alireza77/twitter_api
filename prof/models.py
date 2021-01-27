@@ -88,8 +88,12 @@ class Follow(models.Model):
 
 
 class Event(models.Model):
-    user = models.ForeignKey("UserProfile", on_delete=models.CASCADE)
+    user = models.ForeignKey("UserProfile", on_delete=models.CASCADE, unique=True)
+    date = models.DateTimeField(default=timezone.now)
+    update = models.BooleanField(default=True)
 
+    def __str__(self):
+        return f"{self.user} - {self.update}"
 # class Log(models.Model):
 #     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
 #     retwitt = models.ForeignKey("twitt.Retwitt", on_delete=models.CASCADE)

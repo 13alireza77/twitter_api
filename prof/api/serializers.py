@@ -2,7 +2,7 @@ from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
 
-from prof.models import UserProfile, Follow
+from prof.models import UserProfile, Follow, Event
 from django.contrib.auth import get_user_model
 
 from twitt.models import Retwitt, Like
@@ -61,6 +61,9 @@ class FollowCreateSerializer(serializers.Serializer):
                 target=target,
             )
             follow.save()
+            obj, created = Event.objects.get_or_create(user__id=target.user.pk)
+            obj.update = True
+            obj.save()
             return follow
         return None
 
@@ -220,3 +223,13 @@ class UpdateUserSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+
+
+class EventSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
+    password2 = serializers.CharField(write_only=True, required=True)
+    old_password = serializers.CharField(write_only=True, required=True)
+
+    class Meta:
+        model = UserProfile
+        fields = ('old_password', 'password', 'password2')
