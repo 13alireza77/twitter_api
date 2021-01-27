@@ -92,9 +92,7 @@ class TwittProfile_view(mixins.ListModelMixin, generics.GenericAPIView):
 
     def get_queryset(self):
         # user = self.request.user
-        obs = Follow.objects.filter(user__username=self.kwargs['username'])
-        al = [o.target.pk for o in obs]
-        return Twitt.objects.filter(user__id__in=al)
+        return Twitt.objects.filter(user__username=self.kwargs['username'])
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)

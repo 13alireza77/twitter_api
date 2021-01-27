@@ -33,18 +33,20 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    picture_url = serializers.SerializerMethodField('get_picture_url')
-    cover_url = serializers.SerializerMethodField('get_cover_url')
+    picture_url = serializers.SerializerMethodField(allow_null=True)
+    cover_url = serializers.SerializerMethodField(allow_null=True)
 
     class Meta:
         model = UserProfile
         fields = ('email', 'username', 'name', 'is_active', 'create_at', 'last_modif', 'picture_url', 'cover_url')
 
     def get_picture_url(self, obj):
-        return self.context['request'].build_absolute_uri(obj.picture)
+        if obj.picture:
+            return self.context.get('request').build_absolute_uri(obj.picture.url)
 
     def get_cover_url(self, obj):
-        return self.context['request'].build_absolute_uri(obj.cover)
+        if obj.cover:
+            return self.context.get('request').build_absolute_uri(obj.cover.url)
 
 
 class FollowCreateSerializer(serializers.Serializer):
@@ -103,8 +105,8 @@ class FollowingSerializer(serializers.ModelSerializer):
 
 
 class MySerializer(serializers.ModelSerializer):
-    picture_url = serializers.SerializerMethodField('get_picture_url')
-    cover_url = serializers.SerializerMethodField('get_cover_url')
+    picture_url = serializers.SerializerMethodField(allow_null=True)
+    cover_url = serializers.SerializerMethodField(allow_null=True)
     retwittl = SerializerMethodField()
     likel = SerializerMethodField()
     followl = SerializerMethodField()
@@ -116,10 +118,12 @@ class MySerializer(serializers.ModelSerializer):
                   'likel', 'followl']
 
     def get_picture_url(self, obj):
-        return self.context['request'].build_absolute_uri(obj.picture)
+        if obj.picture:
+            return self.context.get('request').build_absolute_uri(obj.picture.url)
 
     def get_cover_url(self, obj):
-        return self.context['request'].build_absolute_uri(obj.cover)
+        if obj.cover:
+            return self.context.get('request').build_absolute_uri(obj.cover.url)
 
     def get_retwittl(self, obj):
         ob = Retwitt.objects.filter(user__id=obj.id)
