@@ -208,11 +208,8 @@ class UpdateUserSerializer(serializers.ModelSerializer):
         instance.first_name = validated_data['name']
         instance.email = validated_data['email']
         instance.username = validated_data['username']
-        if self.context['image']:
-            instance.image = validated_data['image']
-        if self.context['cover']:
-            instance.cover = validated_data['cover']
-
+        instance.image = validated_data['image']
+        instance.cover = validated_data['cover']
         instance.save()
 
         return instance
