@@ -89,7 +89,7 @@ class TwittProfile_view(mixins.ListModelMixin, generics.GenericAPIView):
 
     # queryset = Follow.objects.all()
     filter_backends = [filters.OrderingFilter]
-    ordering = ['date']
+    ordering = ['-date']
 
     def get_queryset(self):
         # user = self.request.user
