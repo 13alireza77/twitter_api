@@ -88,7 +88,7 @@ class Follow(models.Model):
 
 
 class Event(models.Model):
-    user = models.ForeignKey("UserProfile", on_delete=models.CASCADE, unique=True)
+    user = models.OneToOneField("UserProfile", on_delete=models.CASCADE, unique=True)
     date = models.DateTimeField(default=timezone.now)
     update = models.BooleanField(default=True)
 

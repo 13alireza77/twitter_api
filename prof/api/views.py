@@ -169,28 +169,49 @@ class UpdateProfileView(generics.UpdateAPIView):
     serializer_class = UpdateUserSerializer
 
 
+# class GetEvent(mixins.ListModelMixin, generics.GenericAPIView):
+#     permission_classes = [IsAuthenticated]
+#     serializer_class = FollowerSerializer
+#     # queryset = Follow.objects.all()
+#     filter_backends = [filters.OrderingFilter]
+#     ordering = ['date']
+#
+#     def get_queryset(self):
+#         user = self.request.user
+#         try:
+#             return Event.objects.filter(user__id=user).first()
+#             # e = Event.objects.filter(user__id=user).first()
+#             # if e.update:
+#             #     d = e.date
+#             #     e.update = False
+#             #     obfs = Follow.objects.filter(target__id=user)
+#             #     ob = [o.user.id for o in obfs]
+#             #     objs = chain(UserProfile.objects.filter(like__twitt__user_id=user, like__date__gt=d),
+#             #                  UserProfile.objects.filter(retwitt__twitt__user__id=user, retwitt__date__gt=d),
+#             #                  UserProfile.objects.filter(id__in=ob))
+#             #     e.date = timezone.now
+#             #     e.save()
+#             #     return objs
+#         except Event.DoesNotExist:
+#             raise Http404
+#
+#     def get(self, request, *args, **kwargs):
+#         return self.list(request, *args, **kwargs)
 class GetEvent(mixins.ListModelMixin, generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = FollowerSerializer
-    # queryset = Follow.objects.all()
-    filter_backends = [filters.OrderingFilter]
-    ordering = ['date']
 
-    def get_queryset(self):
-        user = self.request.user
+    # serializer_class = UersLikeSerializer
+    # queryset = Follow.objects.all()
+    def get_object(self):
         try:
-            e = Event.objects.filter(user__id=user).first()
-            if e.update:
-                d = e.date
-                e.update = False
-                objs = chain(UserProfile.objects.filter(like__twitt__user_id=user, like__date__gt=d),
-                             UserProfile.objects.filter(retwitt__twitt__user__id=user, retwitt__date__gt=d),
-                             Follow.objects.filter(target_))
-                e.date = timezone.now
-                e.save()
-                return objs
-        except Event.DoesNotExist:
+            return Event.objects.filter(user__id=self.request.user).first()
+        except UserProfile.DoesNotExist:
             raise Http404
 
+    # def get_queryset(self):
+    #     return Twitt.objects.filter(twitt_id=self.request.data['pk']).first()
+
     def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
+        snippet = self.get_object()
+        serializer = MySerializer(snippet, context={'request': request})
+        return Response(serializer.data)

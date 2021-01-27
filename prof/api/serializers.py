@@ -130,27 +130,15 @@ class MySerializer(serializers.ModelSerializer):
 
     def get_retwittl(self, obj):
         ob = Retwitt.objects.filter(user__id=obj.id)
-        res = []
-        lob = ob.select_related('target').values_list('id', flat=True)
-        for i, j in zip(ob, lob):
-            res.append((i.date, j))
-        return res
+        return [(o.twitt.id, o.date) for o in ob]
 
     def get_likel(self, obj):
         ob = Like.objects.filter(user__id=obj.id)
-        res = []
-        lob = ob.select_related('target').values_list('id', flat=True)
-        for i, j in zip(ob, lob):
-            res.append((i.date, j))
-        return res
+        return [(o.twitt.id, o.date) for o in ob]
 
     def get_followl(self, obj):
         ob = Follow.objects.filter(user__id=obj.id)
-        res = []
-        lob = ob.select_related('target').values_list('id', flat=True)
-        for i, j in zip(ob, lob):
-            res.append((i.date, j))
-        return res
+        return [(o.target.username, o.date) for o in ob]
 
 
 class ChangePasswordSerializer(serializers.ModelSerializer):
@@ -226,10 +214,23 @@ class UpdateUserSerializer(serializers.ModelSerializer):
 
 
 class EventSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
-    password2 = serializers.CharField(write_only=True, required=True)
-    old_password = serializers.CharField(write_only=True, required=True)
+    likes = SerializerMethodField()
+    retwitt = SerializerMethodField()
+    follow = SerializerMethodField()
 
     class Meta:
         model = UserProfile
         fields = ('old_password', 'password', 'password2')
+
+    def get_likes(self, obj):
+        return UserProfile.objects.filter(like__twitt__user_id=self.context['request'].user,
+                                          like__date__gt=obj.date).values_list('username', flat=True)
+
+    def get_retwitt(self, obj):
+        return UserProfile.objects.filter(retwitt__twitt__user__id=self.context['request'].user,
+                                          retwitt__date__gt=obj.id).values_list('username', flat=True)
+
+    def get_follow(self, obj):
+        obfs = Follow.objects.filter(target__id=self.context['request'].user)
+        ob = [o.user.id for o in obfs]
+        return UserProfile.objects.filter(id__in=ob).values_list('username', flat=True)

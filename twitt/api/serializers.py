@@ -92,7 +92,7 @@ class TwittSerializer(serializers.ModelSerializer):
 
     def get_likes(self, obj):
         obs = Like.objects.filter(twitt_id=obj.id)
-        return [t.user.id for t in obs]
+        return [t.user.username for t in obs]
 
     def get_comments(self, obj):
         obs = Comment.objects.filter(parent__id=obj.id)
@@ -100,7 +100,7 @@ class TwittSerializer(serializers.ModelSerializer):
 
     def get_retwitts(self, obj):
         obs = Retwitt.objects.filter(twitt_id=obj.id)
-        return [t.user.id for t in obs]
+        return [t.user.username for t in obs]
 
     def get_id(self, obj):
         return obj.pk
