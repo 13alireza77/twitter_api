@@ -86,30 +86,30 @@ class UnFollow_view(APIView):
 
 
 class Following_view(mixins.ListModelMixin, generics.GenericAPIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     serializer_class = FollowingSerializer
     # queryset = Follow.objects.all()
     filter_backends = [filters.OrderingFilter]
     ordering = ['date']
 
     def get_queryset(self):
-        user = self.request.user
-        return Follow.objects.filter(user=user)
+        # user = self.request.user
+        return Follow.objects.filter(user__username=self.kwargs['username'])
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
 
 
 class Follower_view(mixins.ListModelMixin, generics.GenericAPIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     serializer_class = FollowerSerializer
     # queryset = Follow.objects.all()
     filter_backends = [filters.OrderingFilter]
     ordering = ['date']
 
     def get_queryset(self):
-        user = self.request.user
-        return Follow.objects.filter(target=user)
+        # user = self.request.user
+        return Follow.objects.filter(target__username=self.kwargs['username'])
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)

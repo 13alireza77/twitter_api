@@ -75,10 +75,10 @@ class TwittDeleteSerializer(serializers.Serializer):
 
 
 class TwittSerializer(serializers.ModelSerializer):
-    image = serializers.ImageField()
-    video = serializers.FileField()
-    likes = SerializerMethodField()
-    comments = SerializerMethodField()
+    image = serializers.ImageField(allow_null=True)
+    video = serializers.FileField(allow_null=True)
+    likes = SerializerMethodField(allow_null=True)
+    comments = SerializerMethodField(allow_null=True)
     user = UserSerializer(read_only=True)
 
     class Meta:

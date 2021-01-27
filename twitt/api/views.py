@@ -83,6 +83,23 @@ class Twitt_view(mixins.ListModelMixin, generics.GenericAPIView):
         return self.list(request, *args, **kwargs)
 
 
+class TwittProfile_view(mixins.ListModelMixin, generics.GenericAPIView):
+    # permission_classes = [IsAuthenticated]
+    serializer_class = TwittSerializer
+    # queryset = Follow.objects.all()
+    filter_backends = [filters.OrderingFilter]
+    ordering = ['date']
+
+    def get_queryset(self):
+        # user = self.request.user
+        obs = Follow.objects.filter(user__username=self.kwargs['username'])
+        al = [o.target.pk for o in obs]
+        return Twitt.objects.filter(user__id__in=al)
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+
 class Like_create_view(APIView):
     permission_classes = [IsAuthenticated]
 
