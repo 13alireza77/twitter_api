@@ -10,7 +10,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from prof.api.serializers import RegisterSerializer, UserSerializer, FollowCreateSerializer, FollowerSerializer, \
-    FollowingSerializer, UnFollowSerializer, MySerializer, ChangePasswordSerializer, UpdateUserSerializer
+    FollowingSerializer, UnFollowSerializer, MySerializer, ChangePasswordSerializer, UpdateUserSerializer, \
+    EventSerializer
 from rest_framework import mixins
 from prof.models import Follow, UserProfile, Event
 
@@ -204,7 +205,7 @@ class GetEvent(mixins.ListModelMixin, generics.GenericAPIView):
     # queryset = Follow.objects.all()
     def get_object(self):
         try:
-            return Event.objects.filter(user__id=self.request.user).first()
+            return Event.objects.filter(user_id=self.request.user).first()
         except UserProfile.DoesNotExist:
             raise Http404
 
@@ -213,5 +214,5 @@ class GetEvent(mixins.ListModelMixin, generics.GenericAPIView):
 
     def get(self, request, *args, **kwargs):
         snippet = self.get_object()
-        serializer = MySerializer(snippet, context={'request': request})
+        serializer = EventSerializer(snippet, context={'request': request})
         return Response(serializer.data)

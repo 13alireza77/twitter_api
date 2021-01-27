@@ -9,7 +9,7 @@ from rest_framework import mixins
 
 from prof.models import Follow
 from twitt.api.serializers import TwittCreateSerializer, TwittDeleteSerializer, ReTwittCreateSerializer, \
-    TwittSerializer, CreateLikeSerializer, CommentCreateSerializer, HashtagSerializer
+    TwittSerializer, CreateLikeSerializer, CommentCreateSerializer, HashtagSerializer, DisLikeSerializer
 from twitt.models import Twitt, Retwitt, Like, Hashtag
 from rest_framework.parsers import MultiPartParser, FormParser, FileUploadParser
 
@@ -105,6 +105,23 @@ class Like_create_view(APIView):
         serializer = CreateLikeSerializer(data=request.data)
         if serializer.is_valid():
             res = serializer.like(self.request.user)
+            if res:
+                return JsonResponse({
+                    'status': res,
+                })
+            else:
+                return JsonResponse({
+                    'status': False,
+                })
+
+
+class disLike_create_view(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = DisLikeSerializer(data=request.data)
+        if serializer.is_valid():
+            res = serializer.dislike()
             if res:
                 return JsonResponse({
                     'status': res,

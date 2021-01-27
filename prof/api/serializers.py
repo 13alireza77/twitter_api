@@ -1,4 +1,7 @@
+from datetime import datetime
+
 from django.contrib.auth.password_validation import validate_password
+from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
 
@@ -61,8 +64,8 @@ class FollowCreateSerializer(serializers.Serializer):
                 target=target,
             )
             follow.save()
-            obj, created = Event.objects.get_or_create(user__id=target.user.pk)
-            obj.update = True
+            obj, created = Event.objects.get_or_create(user_id=target.pk)
+            obj.update_follow = True
             obj.save()
             return follow
         return None
@@ -176,13 +179,15 @@ class UpdateUserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=True, allow_null=True)
     image = serializers.ImageField(allow_null=True)
     cover = serializers.ImageField(allow_null=True)
+    username = serializers.CharField(allow_null=True)
+    name = serializers.CharField(allow_null=True)
 
     class Meta:
         model = UserProfile
         fields = ('username', 'name', 'email', 'image', 'cover')
-        extra_kwargs = {
-            'name': {'required': True}
-        }
+        # extra_kwargs = {
+        #     'name': {'required': True}
+        # }
 
     def validate_email(self, value):
         user = self.context['request'].user
@@ -214,23 +219,38 @@ class UpdateUserSerializer(serializers.ModelSerializer):
 
 
 class EventSerializer(serializers.ModelSerializer):
-    likes = SerializerMethodField()
-    retwitt = SerializerMethodField()
-    follow = SerializerMethodField()
+    likes = SerializerMethodField(allow_null=True)
+    retwitt = SerializerMethodField(allow_null=True)
+    follow = SerializerMethodField(allow_null=True)
 
     class Meta:
         model = UserProfile
-        fields = ('old_password', 'password', 'password2')
+        fields = ('likes', 'retwitt', 'follow')
 
     def get_likes(self, obj):
-        return UserProfile.objects.filter(like__twitt__user_id=self.context['request'].user,
-                                          like__date__gt=obj.date).values_list('username', flat=True)
+        if obj.update_like:
+            # e = Event.objects.get(pk=obj.id)
+            obj.update_like = False
+            obj.date = datetime.now()
+            obj.save()
+            return UserProfile.objects.filter(like__twitt__user_id=self.context['request'].user.id,
+                                              like__date__gt=obj.date).values_list('username', flat=True)
 
     def get_retwitt(self, obj):
-        return UserProfile.objects.filter(retwitt__twitt__user__id=self.context['request'].user,
-                                          retwitt__date__gt=obj.id).values_list('username', flat=True)
+        if obj.update_retwitt:
+            # e = Event.objects.get(pk=obj.id)
+            obj.update_retwitt = False
+            obj.date = datetime.now()
+            obj.save()
+            return UserProfile.objects.filter(retwitt__twitt__user__id=self.context['request'].user.id,
+                                              retwitt__date__gt=obj.date).values_list('username', flat=True)
 
     def get_follow(self, obj):
-        obfs = Follow.objects.filter(target__id=self.context['request'].user)
-        ob = [o.user.id for o in obfs]
-        return UserProfile.objects.filter(id__in=ob).values_list('username', flat=True)
+        if obj.update_follow:
+            obfs = Follow.objects.filter(target__id=self.context['request'].user.id, date__gt=obj.date)
+            ob = [o.user.id for o in obfs]
+            # e = Event.objects.get(pk=obj.id)
+            obj.update_follow = False
+            obj.date = datetime.now()
+            obj.save()
+            return UserProfile.objects.filter(id__in=ob).values_list('username', flat=True)

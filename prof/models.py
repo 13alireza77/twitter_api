@@ -89,11 +89,13 @@ class Follow(models.Model):
 
 class Event(models.Model):
     user = models.OneToOneField("UserProfile", on_delete=models.CASCADE, unique=True)
-    date = models.DateTimeField(default=timezone.now)
-    update = models.BooleanField(default=True)
+    date = models.DateTimeField(auto_now=timezone.now)
+    update_like = models.BooleanField(default=False)
+    update_follow = models.BooleanField(default=False)
+    update_retwitt = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.user} - {self.update}"
+        return f"{self.user}"
 # class Log(models.Model):
 #     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
 #     retwitt = models.ForeignKey("twitt.Retwitt", on_delete=models.CASCADE)

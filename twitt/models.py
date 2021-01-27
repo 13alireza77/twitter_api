@@ -19,7 +19,7 @@ class Twitt(models.Model):
 class Hashtag(models.Model):
     twitts = models.ManyToManyField("Twitt")
     name = models.CharField(max_length=50, unique=True)
-    occurrences = models.PositiveIntegerField(default=1, null=False, blank=False, auto_created=True)
+    occurrences = models.PositiveIntegerField(default=0, null=False, blank=False, auto_created=True)
     lastupdate = models.DateTimeField(auto_now=True)
 
     def __str__(self):

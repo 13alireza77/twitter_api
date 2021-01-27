@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
 from django.db.models import F
 from prof.api.serializers import UserSerializer
-from prof.models import Event
+from prof.models import Event, UserProfile
 from twitt.models import Twitt, Retwitt, Like, Comment, Hashtag
 import re
 
@@ -30,15 +30,13 @@ class TwittCreateSerializer(serializers.Serializer):
             )
             twitt.save()
             if text:
+                print(text)
                 for h in extract_hashtags(text):
                     obj, created = Hashtag.objects.get_or_create(name=h)
-                    if obj:
-                        obj.twitts.add(twitt)
-                        Hashtag.objects.filter(name=h).update(occurrences=F('occurrences') + 1)
-                        obj.save()
-                    else:
-                        created.twitts.add(twitt)
-                        created.save()
+                    obj.twitts.add(twitt)
+                    oc = obj.occurrences
+                    obj.occurrences = oc + 1
+                    obj.save()
             return twitt.pk
         else:
             return None
@@ -56,8 +54,8 @@ class ReTwittCreateSerializer(serializers.Serializer):
                 twitt=twitt,
             )
             retwitt.save()
-            obj, created = Event.objects.get_or_create(user__id=twitt.user.pk)
-            obj.update = True
+            obj, created = Event.objects.get_or_create(user_id=twitt.user.pk)
+            obj.update_retwitt = True
             obj.save()
             return twitt
         else:
@@ -65,11 +63,11 @@ class ReTwittCreateSerializer(serializers.Serializer):
 
 
 class TwittDeleteSerializer(serializers.Serializer):
-    pk = serializers.IntegerField(min_value=0)
+    id = serializers.IntegerField(min_value=0)
 
     def remove(self):
         try:
-            pk = self.validated_data['pk']
+            pk = self.validated_data['id']
             twitt = Twitt.objects.filter(pk=pk).first()
             twitt.delete()
             return twitt
@@ -107,10 +105,10 @@ class TwittSerializer(serializers.ModelSerializer):
 
 
 class CreateLikeSerializer(serializers.Serializer):
-    pk = serializers.IntegerField(min_value=0)
+    id = serializers.IntegerField(min_value=0)
 
     def like(self, user):
-        pk = self.validated_data['pk']
+        pk = self.validated_data['id']
         twitt = Twitt.objects.filter(pk=pk).first()
         if twitt:
             like = Like(
@@ -118,11 +116,32 @@ class CreateLikeSerializer(serializers.Serializer):
                 twitt=twitt,
             )
             like.save()
-            obj, created = Event.objects.get_or_create(user__id=twitt.user.pk)
-            obj.update = True
+            obj, created = Event.objects.get_or_create(user_id=twitt.user.pk)
+            obj.update_like = True
             obj.save()
             return like.pk
         else:
+            return None
+
+
+class DisLikeSerializer(serializers.Serializer):
+    id = serializers.IntegerField(min_value=0)
+    username = serializers.CharField(max_length=50)
+
+    def dislike(self):
+        id = self.validated_data['id']
+        username = self.validated_data['username']
+        print(id, username)
+        try:
+            if id and username:
+                twitt = Twitt.objects.filter(pk=id).first()
+                prof = UserProfile.objects.filter(username=username).first()
+                like = Like.objects.filter(user=prof, twitt=twitt).first()
+                like.delete()
+                return 1
+            else:
+                return None
+        except:
             return None
 
 
