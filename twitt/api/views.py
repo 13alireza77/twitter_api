@@ -148,7 +148,7 @@ class Comment_create_view(APIView):
 
 
 class Get_twitt(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     # serializer_class = UersLikeSerializer
     # queryset = Follow.objects.all()
