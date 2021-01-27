@@ -1,4 +1,7 @@
+from itertools import chain
+
 from django.http import JsonResponse, Http404
+from django.utils import timezone
 from rest_framework import generics, permissions, filters
 from rest_framework.generics import GenericAPIView
 from rest_framework.parsers import FileUploadParser
@@ -6,12 +9,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-
 from prof.api.serializers import RegisterSerializer, UserSerializer, FollowCreateSerializer, FollowerSerializer, \
     FollowingSerializer, UnFollowSerializer, MySerializer, ChangePasswordSerializer, UpdateUserSerializer
 from rest_framework import mixins
-
-from prof.models import Follow, UserProfile
+from prof.models import Follow, UserProfile, Event
 
 
 class RegisterApi(generics.GenericAPIView):
@@ -166,3 +167,30 @@ class UpdateProfileView(generics.UpdateAPIView):
     queryset = UserProfile.objects.all()
     permission_classes = (IsAuthenticated,)
     serializer_class = UpdateUserSerializer
+
+
+class GetEvent(mixins.ListModelMixin, generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = FollowerSerializer
+    # queryset = Follow.objects.all()
+    filter_backends = [filters.OrderingFilter]
+    ordering = ['date']
+
+    def get_queryset(self):
+        user = self.request.user
+        try:
+            e = Event.objects.filter(user__id=user).first()
+            if e.update:
+                d = e.date
+                e.update = False
+                objs = chain(UserProfile.objects.filter(like__twitt__user_id=user, like__date__gt=d),
+                             UserProfile.objects.filter(retwitt__twitt__user__id=user, retwitt__date__gt=d),
+                             UserProfile.objects.filter(follow__target__id=user, follow__date__gt=d))
+                e.date = timezone.now
+                e.save()
+                return objs
+        except Event.DoesNotExist:
+            raise Http404
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)

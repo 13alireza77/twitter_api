@@ -2,8 +2,8 @@ from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
 from django.db.models import F
 from prof.api.serializers import UserSerializer
+from prof.models import Event
 from twitt.models import Twitt, Retwitt, Like, Comment, Hashtag
-from django.utils import timezone
 import re
 
 
@@ -56,6 +56,9 @@ class ReTwittCreateSerializer(serializers.Serializer):
                 twitt=twitt,
             )
             retwitt.save()
+            obj, created = Event.objects.get_or_create(user__id=twitt.user.pk)
+            obj.update = True
+            obj.save()
             return twitt
         else:
             return None
@@ -104,6 +107,9 @@ class CreateLikeSerializer(serializers.Serializer):
                 twitt=twitt,
             )
             like.save()
+            obj, created = Event.objects.get_or_create(user__id=twitt.user.pk)
+            obj.update = True
+            obj.save()
             return like.pk
         else:
             return None
