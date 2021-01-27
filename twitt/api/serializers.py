@@ -101,7 +101,7 @@ class TwittSerializer(serializers.ModelSerializer):
         return [t.user.username for t in obs]
 
     def get_id(self, obj):
-        return obj.pk
+        return obj.id
 
 
 class CreateLikeSerializer(serializers.Serializer):

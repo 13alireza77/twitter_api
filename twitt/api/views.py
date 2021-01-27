@@ -1,13 +1,13 @@
+from itertools import islice, chain
+
 from django.db.models import Q
 from django.http import JsonResponse, Http404
 from rest_framework import generics, permissions, filters
-from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import mixins
-
-from prof.models import Follow
+from prof.models import Follow, UserProfile
 from twitt.api.serializers import TwittCreateSerializer, TwittDeleteSerializer, ReTwittCreateSerializer, \
     TwittSerializer, CreateLikeSerializer, CommentCreateSerializer, HashtagSerializer, DisLikeSerializer
 from twitt.models import Twitt, Retwitt, Like, Hashtag
@@ -86,13 +86,19 @@ class Twitt_view(mixins.ListModelMixin, generics.GenericAPIView):
 class TwittProfile_view(mixins.ListModelMixin, generics.GenericAPIView):
     # permission_classes = [IsAuthenticated]
     serializer_class = TwittSerializer
+
     # queryset = Follow.objects.all()
     filter_backends = [filters.OrderingFilter]
     ordering = ['date']
 
     def get_queryset(self):
         # user = self.request.user
-        return Twitt.objects.filter(user__username=self.kwargs['username'])
+        username = self.kwargs['username']
+        return Twitt.objects.filter(
+            Q(user__username=username) | Q(retwitt__user__username=username) | Q(like__user__username=username))
+        # return list(chain(Twitt.objects.filter(user__username=self.kwargs['username']),
+        #                   Twitt.objects.filter(retwitt__user__username=username),
+        #                   Twitt.objects.filter(like__user__username=username)))
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
@@ -209,3 +215,28 @@ class Event_view(mixins.ListModelMixin, generics.GenericAPIView):
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
+
+
+class Search_View(APIView):
+    # permission_classes = [IsAuthenticated]
+
+    # serializer_class = UersLikeSerializer
+    # queryset = Follow.objects.all()
+    def get_object(self, phrase):
+        try:
+            if phrase[0] == "*":
+                return Twitt.objects.filter(hashtag__name__contains=phrase[1:])
+            elif phrase[0] == "@":
+                return Twitt.objects.filter(user__username__contains=phrase[1:])
+            elif phrase:
+                return Twitt.objects.filter(text__contains=phrase)
+        except:
+            raise Http404
+
+    # def get_queryset(self):
+    #     return Twitt.objects.filter(twitt_id=self.request.data['pk']).first()
+
+    def get(self, request, phrase, *args, **kwargs):
+        snippet = self.get_object(phrase)
+        serializer = TwittSerializer(snippet, context={'request': request}, many=True)
+        return Response(serializer.data)
