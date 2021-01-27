@@ -33,12 +33,18 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    picture = serializers.ImageField()
-    cover = serializers.ImageField()
+    picture_url = serializers.SerializerMethodField('get_picture_url')
+    cover_url = serializers.SerializerMethodField('get_cover_url')
 
     class Meta:
         model = UserProfile
-        fields = ('email', 'username', 'name', 'is_active', 'create_at', 'last_modif', 'picture', 'cover')
+        fields = ('email', 'username', 'name', 'is_active', 'create_at', 'last_modif', 'picture_url', 'cover_url')
+
+    def get_picture_url(self, obj):
+        return self.context['request'].build_absolute_uri(obj.picture_url)
+
+    def get_cover_url(self, obj):
+        return self.context['request'].build_absolute_uri(obj.cover_url)
 
 
 class FollowCreateSerializer(serializers.Serializer):
@@ -97,16 +103,23 @@ class FollowingSerializer(serializers.ModelSerializer):
 
 
 class MySerializer(serializers.ModelSerializer):
-    picture = serializers.ImageField()
-    cover = serializers.ImageField()
+    picture_url = serializers.SerializerMethodField('get_picture_url')
+    cover_url = serializers.SerializerMethodField('get_cover_url')
     retwittl = SerializerMethodField()
     likel = SerializerMethodField()
     followl = SerializerMethodField()
 
     class Meta:
         model = UserProfile
-        fields = ['email', 'username', 'name', 'is_active', 'create_at', 'last_modif', 'picture', 'cover', 'retwittl',
+        fields = ['email', 'username', 'name', 'is_active', 'create_at', 'last_modif', 'picture_url', 'cover_url',
+                  'retwittl',
                   'likel', 'followl']
+
+    def get_picture_url(self, obj):
+        return self.context['request'].build_absolute_uri(obj.picture_url)
+
+    def get_cover_url(self, obj):
+        return self.context['request'].build_absolute_uri(obj.cover_url)
 
     def get_retwittl(self, obj):
         ob = Retwitt.objects.filter(user__id=obj.id)
