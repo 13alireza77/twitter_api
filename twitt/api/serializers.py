@@ -80,16 +80,20 @@ class TwittSerializer(serializers.ModelSerializer):
     likes = SerializerMethodField(allow_null=True)
     comments = SerializerMethodField(allow_null=True)
     user = UserSerializer(read_only=True)
+    id = SerializerMethodField()
 
     class Meta:
         model = Twitt
-        fields = ('user', 'text', 'date', 'image', 'video', 'likes', 'comments')
+        fields = ('id', 'user', 'text', 'date', 'image', 'video', 'likes', 'comments')
 
     def get_likes(self, obj):
         return Like.objects.filter(twitt_id=obj.id).count()
 
     def get_comments(self, obj):
         return Comment.objects.filter(parent__id=obj.id).select_related('twitt').values_list('id', flat=True)
+
+    def get_id(self, obj):
+        return obj.pk
 
 
 class CreateLikeSerializer(serializers.Serializer):
