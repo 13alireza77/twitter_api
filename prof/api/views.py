@@ -131,7 +131,7 @@ class Get_Profie(APIView):
 
     def get(self, request, username, *args, **kwargs):
         snippet = self.get_object(username)
-        serializer = UserSerializer(snippet)
+        serializer = UserSerializer(snippet, context={'request': request})
         return Response(serializer.data)
 
 
@@ -151,7 +151,7 @@ class Get_My(APIView):
 
     def get(self, request, *args, **kwargs):
         snippet = self.get_object(request.user)
-        serializer = MySerializer(snippet)
+        serializer = MySerializer(snippet, context={'request': request})
         return Response(serializer.data)
 
 

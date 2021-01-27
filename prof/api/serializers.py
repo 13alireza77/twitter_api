@@ -41,10 +41,10 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('email', 'username', 'name', 'is_active', 'create_at', 'last_modif', 'picture_url', 'cover_url')
 
     def get_picture_url(self, obj):
-        return self.context['request'].build_absolute_uri(obj.picture_url)
+        return self.context['request'].build_absolute_uri(obj.picture)
 
     def get_cover_url(self, obj):
-        return self.context['request'].build_absolute_uri(obj.cover_url)
+        return self.context['request'].build_absolute_uri(obj.cover)
 
 
 class FollowCreateSerializer(serializers.Serializer):
@@ -116,10 +116,10 @@ class MySerializer(serializers.ModelSerializer):
                   'likel', 'followl']
 
     def get_picture_url(self, obj):
-        return self.context['request'].build_absolute_uri(obj.picture_url)
+        return self.context['request'].build_absolute_uri(obj.picture)
 
     def get_cover_url(self, obj):
-        return self.context['request'].build_absolute_uri(obj.cover_url)
+        return self.context['request'].build_absolute_uri(obj.cover)
 
     def get_retwittl(self, obj):
         ob = Retwitt.objects.filter(user__id=obj.id)
