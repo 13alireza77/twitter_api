@@ -71,7 +71,7 @@ class Twitt_view(mixins.ListModelMixin, generics.GenericAPIView):
     serializer_class = TwittSerializer
     # queryset = Follow.objects.all()
     filter_backends = [filters.OrderingFilter]
-    ordering = ['date']
+    ordering = ['-date']
 
     def get_queryset(self):
         user = self.request.user
@@ -121,7 +121,7 @@ class disLike_create_view(APIView):
     def post(self, request):
         serializer = DisLikeSerializer(data=request.data)
         if serializer.is_valid():
-            res = serializer.dislike()
+            res = serializer.dislike(request.user)
             if res:
                 return JsonResponse({
                     'status': res,

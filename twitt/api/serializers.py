@@ -126,17 +126,16 @@ class CreateLikeSerializer(serializers.Serializer):
 
 class DisLikeSerializer(serializers.Serializer):
     id = serializers.IntegerField(min_value=0)
-    username = serializers.CharField(max_length=50)
 
-    def dislike(self):
+    def dislike(self, user):
         id = self.validated_data['id']
-        username = self.validated_data['username']
-        print(id, username)
         try:
-            if id and username:
+            if id:
+                print(id, user.id)
                 twitt = Twitt.objects.filter(pk=id).first()
-                prof = UserProfile.objects.filter(username=username).first()
+                prof = UserProfile.objects.filter(pk=user.id).first()
                 like = Like.objects.filter(user=prof, twitt=twitt).first()
+                print(like.id)
                 like.delete()
                 return 1
             else:
