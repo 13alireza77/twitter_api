@@ -116,12 +116,13 @@ class MySerializer(serializers.ModelSerializer):
     retwittl = SerializerMethodField()
     likel = SerializerMethodField()
     followl = SerializerMethodField()
+    id = SerializerMethodField()
 
     class Meta:
         model = UserProfile
-        fields = ['email', 'username', 'name', 'is_active', 'create_at', 'last_modif', 'picture_url', 'cover_url',
+        fields = ('id', 'email', 'username', 'name', 'is_active', 'create_at', 'last_modif', 'picture_url', 'cover_url',
                   'retwittl',
-                  'likel', 'followl']
+                  'likel', 'followl')
 
     def get_picture_url(self, obj):
         if obj.picture:
@@ -142,6 +143,9 @@ class MySerializer(serializers.ModelSerializer):
     def get_followl(self, obj):
         ob = Follow.objects.filter(user__id=obj.id)
         return [(o.target.username, o.date) for o in ob]
+
+    def get_id(self, obj):
+        return obj.id
 
 
 class ChangePasswordSerializer(serializers.ModelSerializer):
