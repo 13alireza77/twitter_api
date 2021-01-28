@@ -182,13 +182,13 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
 class UpdateUserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=True, allow_null=True)
     image = serializers.ImageField(allow_null=True)
-    cover = serializers.ImageField(allow_null=True)
+    # cover = serializers.ImageField(allow_null=True)
     username = serializers.CharField(allow_null=True)
     name = serializers.CharField(allow_null=True)
 
     class Meta:
         model = UserProfile
-        fields = ('username', 'name', 'email', 'image', 'cover')
+        fields = ('username', 'name', 'email', 'image',)
         # extra_kwargs = {
         #     'name': {'required': True}
         # }
@@ -213,7 +213,7 @@ class UpdateUserSerializer(serializers.ModelSerializer):
         instance.email = validated_data['email']
         instance.username = validated_data['username']
         instance.image = validated_data['image']
-        instance.cover = validated_data['cover']
+        # instance.cover = validated_data['cover']
         instance.save()
 
         return instance
