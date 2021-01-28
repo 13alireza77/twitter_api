@@ -191,7 +191,7 @@ class Get_twitt(APIView):
 
 
 class Get_top_Hashtags(mixins.ListModelMixin, generics.GenericAPIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     serializer_class = HashtagSerializer
     queryset = Hashtag.objects.all()
     filter_backends = [filters.OrderingFilter]
