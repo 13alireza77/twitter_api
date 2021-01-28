@@ -89,7 +89,7 @@ class Follow(models.Model):
 
 class Event(models.Model):
     user = models.OneToOneField("UserProfile", on_delete=models.CASCADE, unique=True)
-    date = models.DateTimeField(auto_now=timezone.now)
+    date = models.DateTimeField(default=timezone.now)
     update_like = models.BooleanField(default=False)
     update_follow = models.BooleanField(default=False)
     update_retwitt = models.BooleanField(default=False)
