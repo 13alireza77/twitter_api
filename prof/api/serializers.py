@@ -63,10 +63,10 @@ class FollowCreateSerializer(serializers.Serializer):
                 user=user,
                 target=target,
             )
-            follow.save()
             obj, created = Event.objects.get_or_create(user_id=target.pk)
             obj.update_follow = True
             obj.save()
+            follow.save()
             return follow
         return None
 
@@ -230,28 +230,34 @@ class EventSerializer(serializers.ModelSerializer):
 
     def get_likes(self, obj):
         if obj.update_like:
+            res = UserProfile.objects.filter(like__twitt__user_id=self.context['request'].user.id,
+                                             like__date__gt=obj.date).values_list('username', flat=True)
             # e = Event.objects.get(pk=obj.id)
             obj.update_like = False
-            obj.date = datetime.now()
+            if not (obj.update_like or obj.update_retwitt or obj.update_retwitt):
+                obj.date = datetime.now()
             obj.save()
-            return UserProfile.objects.filter(like__twitt__user_id=self.context['request'].user.id,
-                                              like__date__gt=obj.date).values_list('username', flat=True)
+            return res
 
     def get_retwitt(self, obj):
         if obj.update_retwitt:
             # e = Event.objects.get(pk=obj.id)
+            res = UserProfile.objects.filter(retwitt__twitt__user__id=self.context['request'].user.id,
+                                             retwitt__date__gt=obj.date).values_list('username', flat=True)
             obj.update_retwitt = False
-            obj.date = datetime.now()
+            if not (obj.update_like or obj.update_retwitt or obj.update_retwitt):
+                obj.date = datetime.now()
             obj.save()
-            return UserProfile.objects.filter(retwitt__twitt__user__id=self.context['request'].user.id,
-                                              retwitt__date__gt=obj.date).values_list('username', flat=True)
+            return res
 
     def get_follow(self, obj):
         if obj.update_follow:
             obfs = Follow.objects.filter(target__id=self.context['request'].user.id, date__gt=obj.date)
             ob = [o.user.id for o in obfs]
+            res = UserProfile.objects.filter(id__in=ob).values_list('username', flat=True)
             # e = Event.objects.get(pk=obj.id)
             obj.update_follow = False
-            obj.date = datetime.now()
+            if not (obj.update_like or obj.update_retwitt or obj.update_retwitt):
+                obj.date = datetime.now()
             obj.save()
-            return UserProfile.objects.filter(id__in=ob).values_list('username', flat=True)
+            return res

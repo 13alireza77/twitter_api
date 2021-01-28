@@ -53,10 +53,10 @@ class ReTwittCreateSerializer(serializers.Serializer):
                 user=user,
                 twitt=twitt,
             )
-            retwitt.save()
             obj, created = Event.objects.get_or_create(user_id=twitt.user.pk)
             obj.update_retwitt = True
             obj.save()
+            retwitt.save()
             return twitt
         else:
             return None
@@ -115,10 +115,10 @@ class CreateLikeSerializer(serializers.Serializer):
                 user=user,
                 twitt=twitt,
             )
-            like.save()
             obj, created = Event.objects.get_or_create(user_id=twitt.user.pk)
             obj.update_like = True
             obj.save()
+            like.save()
             return like.pk
         else:
             return None
