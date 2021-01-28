@@ -195,7 +195,7 @@ class Get_top_Hashtags(mixins.ListModelMixin, generics.GenericAPIView):
     serializer_class = HashtagSerializer
     queryset = Hashtag.objects.all()
     filter_backends = [filters.OrderingFilter]
-    ordering = ['occurrences']
+    ordering = ['-occurrences']
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
